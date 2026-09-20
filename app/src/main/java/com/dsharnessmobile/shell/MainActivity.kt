@@ -89,6 +89,15 @@ class MainActivity : ComponentActivity() {
   private val notificationPermission =
     registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* test channel only */ }
 
+  /** 麦克风运行时授权：页面 getUserMedia(audio) 触发 onPermissionRequest 时按需申请。 */
+  private var pendingWebPermission: android.webkit.PermissionRequest? = null
+  private val micPermission =
+    registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+      val pending = pendingWebPermission
+      pendingWebPermission = null
+      if (granted && pending != null) pending.grant(pending.resources) else pending?.deny()
+    }
+
   companion object {
     private const val TAG = "dsh-shell"
     const val ACTION_UPDATE = "com.dsharnessmobile.shell.action.UPDATE"
@@ -372,6 +381,8 @@ class MainActivity : ComponentActivity() {
     webView.settings.apply {
       javaScriptEnabled = true
       domStorageEnabled = true
+      // 麦克风语音输入：免手势启动媒体（getUserMedia audio 授权后即时生效）
+      mediaPlaybackRequiresUserGesture = false
       allowFileAccess = false
       mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
       // 禁用 HTTP 缓存：杜绝 WebView 命中旧 index/旧 bundle 造成"卡 loading 且
@@ -457,6 +468,23 @@ class MainActivity : ComponentActivity() {
         }
         result.confirm()
         return true
+      }
+
+      // 麦克风（语音输入）：仅放行 AUDIO_CAPTURE；已授权直接 grant，未授权走运行时申请后补 grant。
+      override fun onPermissionRequest(request: android.webkit.PermissionRequest) {
+        runOnUiThread {
+          val wantsMic = request.resources.contains(android.webkit.PermissionRequest.RESOURCE_AUDIO_CAPTURE)
+          if (!wantsMic) {
+            request.deny()
+            return@runOnUiThread
+          }
+          if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            request.grant(request.resources)
+          } else {
+            pendingWebPermission = request
+            micPermission.launch(Manifest.permission.RECORD_AUDIO)
+          }
+        }
       }
     }
     webView.addJavascriptInterface(

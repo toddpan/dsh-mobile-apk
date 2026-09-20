@@ -49,3 +49,24 @@
   实现前先设计标记方式，勿草率改成覆盖语义——那会吃掉用户手改）。
 - **悬浮球动效 M4–M8 未做**（G3 余项）：待答卡位移渐隐 / 状态行 TextSwitcher / 琥珀呼吸 /
   PENDING 脉冲。M1/M2/M9/M10/M11 与降级门（`DsUi.animationsEnabled`）已在 #191 落地。
+- **voice_stt 缺「按住说话」的 UI 录音入口**（语音双件套 2026-09-17 集成批）：
+  dsh-voice 的 `voice_stt` 走 OpenAI 兼容 ASR 接口（默认 Groq whisper），接受音频上传。
+  **壳侧麦克风链路已就绪**（工作区未提交改动）：Manifest `RECORD_AUDIO`/`MODIFY_AUDIO_SETTINGS`
+  + WebView `mediaPlaybackRequiresUserGesture=false` + `onPermissionRequest` 按需放行
+  `RESOURCE_AUDIO_CAPTURE`（运行时授权）——WebView 内 `getUserMedia({audio})` 已可用。
+  缺的只剩**移动 UI 录音入口**：composer 录音按钮 → getUserMedia + MediaRecorder 出 blob →
+  交给 voice_stt。动这块前先确认那三处未提交改动是否一并入 PR。
+  另：ASR 需要 `DSH_VOICE_ASR_KEY`（Groq/OpenAI 兼容密钥），没配时仅 voice_stt 不可用，
+  voice_tts / voice_list 照常。
+- **dsh-prompt-enhancer ✨/🎤 client face 未渲染**（2026-09-20 预装批）：
+  引擎 client-modules 扫描未把 dsh-prompt-enhancer 收进 `__DSH_BOOT__`/startup combo
+  （同通道 dsh-gsv-tts/dsh-undo-savepoint 都在；补 lib/client.js、改 exports["./client"]
+  指向均无效；combo rev 跨重启不变）。主嫌疑：v3.4.0 main=lib/index.cjs（CJS），
+  快照引擎 0.1.5-rc.1 的 client 扫描 internal（ESM）resolveSync 解析失败被静默吞
+  （gsv/undo 主入口均为 .js）。**host 面不受影响**：voice/transcribe 引擎=local
+  （SenseVoice 随包）已端到端实测可用。详见 docs/AGENTS/PROMPT-ENHANCER-ASR.md §6。
+- **check-third-party 既有缺口**（快照源 usr/share/LICENSES 悬空符号链接）沿用：
+  本地构建用 `build-apk.mjs --skip-third-party` 跳过（新增逃生口，带注释）；
+  发版前须补快照源 LICENSES 装配。
+- **dsh-prompt-enhancer 上游无 LICENSE 文件**（package.json 未声明 license）：
+  THIRD_PARTY_NOTICES 已如实登记，发版前与上游确认合规口径。

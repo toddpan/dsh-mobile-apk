@@ -126,3 +126,54 @@
 - insert:
     - id: dsh-model-sync
       name: '@aiwayds/dsh-model-sync'
+
+# OneNat WorkBuddy @(默认预装,2026-09-13):@ 指定 ONENAT 子智能体/资源 + 管理面 + onenat_agent 工具
+- insert:
+    - id: onenat-workbuddy-mention
+      name: '@dsh-external/onenat-workbuddy-mention'
+
+# 提示词增强（预装,2026-09-13）：dsh-prompt-enhancer——composer ✨ 一键提示词增强 + 💬 语音识别
+# （云端/本地双引擎），host+client 双面插件，随 APK 快照预装。
+- insert:
+    - id: dsh-prompt-enhancer
+      name: dsh-prompt-enhancer
+
+# ─── 语音双件套（移动端预装）──────────────────────────────────────────────
+# dsh-voice（voice_tts=edge-tts 零配置微软神经语音 / voice_stt=OpenAI 兼容 ASR / voice_list）。
+# 纯 JS（ws/undici/https-proxy-agent 随包自带），移动端可用。
+# voice_tts 零配置即用；voice_stt 需要 ASR 接口密钥（DSH_VOICE_ASR_KEY 环境变量或设置页），
+# 没配 key 时 voice_tts/voice_list 照常可用、voice_stt 单独不可用。
+# ASR 默认走**本地** whisper.cpp（127.0.0.1:8941，dsh-local-asr 插件提供）：
+# asrApiKey 必须非空（插件校验），local 即占位；模型未下载时服务回 503，
+# 跑 voice_local_bootstrap 下载即可（默认 base-q5_1 ≈ 60MB；中文要求高选 small-q5_1 ≈ 190MB）。
+# 想用回云端 ASR：把 asrEngine 改回 groq（+ DSH_VOICE_ASR_KEY）。
+- insert:
+    - id: voice
+      name: 'dsh-voice'
+      config:
+        asrEngine: custom
+        asrBaseUrl: http://127.0.0.1:8941/v1
+        asrApiKey: local
+        asrModel: base-q5_1
+        ttsVoice: zh-CN-XiaoxiaoNeural
+
+# 本地 ASR 服务（whisper.cpp Android 交叉编译 + OpenAI 兼容 /v1/audio/transcriptions）。
+# 只监听 127.0.0.1；随包自带 whisper 二进制（按 ABI 裁剪注入）与模型 bootstrap 工具。
+- insert:
+    - id: dsh-local-asr
+      name: dsh-local-asr
+
+# dsh-gsv-tts（TTS 面板 + 朗读按钮 + 工具）。**移动端锁 edge 云端模式**：
+# 本地 GSV 模式要 Python + GSV-TTS-Lite 模型（GB 级、torch 依赖），Termux 上不可行；
+# 且 migration.resolveProvider 对"有配置段但无 provider"的旧用户默认落 gsv——
+# 所以这里必须显式写 provider: edge，把云端模式钉死，永远不尝试拉起本地引擎。
+# autoPlay=false：WebView 里自动播放音频会被拦截，保持用户点 🔊 触发。
+- insert:
+    - id: dsh-gsv-tts
+      name: dsh-gsv-tts
+      config:
+        provider: edge
+        autoPlay: false
+        timeout: 30000
+        defaultVoice: zh-CN-XiaoxiaoNeural
+        voices: []

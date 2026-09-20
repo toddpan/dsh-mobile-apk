@@ -18,7 +18,9 @@ import sys
 import tarfile
 
 PROFILES = ("web", "headless")
-INCLUDE_FILES = ("package.json", "cordis.patch.yml", "spec.json", "README.md", "README.zh-CN.md", "LICENSE")
+# 2026-09-20：dsh-prompt-enhancer 的 host/client 双面 bundle 在包根（与 inject-all.py 同批）
+INCLUDE_FILES = ("package.json", "cordis.patch.yml", "spec.json", "README.md", "README.zh-CN.md", "LICENSE",
+                 "plugin-host.js", "plugin-client.js")
 
 
 def is_injectable(name, pkg_names):
@@ -32,6 +34,8 @@ def is_injectable(name, pkg_names):
         if rel.startswith("lib/") and not rel.endswith(".map"):
             return (pkg, rel)
         if rel.startswith("skills/"):
+            return (pkg, rel)
+        if rel.startswith("node_modules/") and not rel.endswith(".map"):
             return (pkg, rel)
         if rel in INCLUDE_FILES:
             return (pkg, rel)
@@ -56,6 +60,17 @@ def build_replacements(pkg_dirs):
             for root, _dirs, fnames in os.walk(base):
                 for fn in fnames:
                     if fn.endswith(".map"):
+                        continue
+                    full = os.path.join(root, fn)
+                    rel = os.path.relpath(full, d).replace("\\", "/")
+                    with open(full, "rb") as f:
+                        files[rel] = f.read()
+        # 自包含依赖：带 node_modules/ 的插件把自己的依赖树一起注入（见 inject-all.py 同款逻辑）
+        nm = os.path.join(d, "node_modules")
+        if os.path.isdir(nm):
+            for root, _dirs, fnames in os.walk(nm):
+                for fn in fnames:
+                    if fn.endswith(".map") or fn in (".modules.yaml", ".pnpm-workspace-state-v1.json"):
                         continue
                     full = os.path.join(root, fn)
                     rel = os.path.relpath(full, d).replace("\\", "/")

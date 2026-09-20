@@ -109,9 +109,15 @@ foreach ($abi in @('arm64', 'x86_64')) {
         # model-sync 注入源（0.13.3 W7）：vendor/dsh-model-sync（@aiwayds/dsh-model-sync 0.3.1
         # 固化副本，MIT；ZCode 式隐式模型补给，见其 PATCHES.md）
         $modelSync = Join-Path $Root "vendor\dsh-model-sync"
+        # 语音双件套（移动端只用网络通道）：dsh-voice=edge-tts/ASR，dsh-gsv-tts=TTS 面板+Edge 云端模式
+        # （锁 edge provider——本地 GSV 引擎要 Python+模型，Termux 上不可行）
+        $voice = Join-Path $Root "vendor\dsh-voice"
+        $gsvTts = Join-Path $Root "vendor\dsh-gsv-tts"
         if (-not (Test-Path (Join-Path $undo "package.json"))) { Write-Host "缺 undo 注入源 $undo（git clone lire1131/dsh-undo-savepoint）"; continue }
         if (-not (Test-Path (Join-Path $market "package.json"))) { Write-Host "缺 marketplace 注入源 $market（vendor 固化副本）"; continue }
         if (-not (Test-Path (Join-Path $modelSync "lib\index.js"))) { Write-Host "缺 model-sync 注入源 $modelSync（vendor 固化副本）"; continue }
+        if (-not (Test-Path (Join-Path $voice "lib\index.js"))) { Write-Host "缺 voice 注入源 $voice（vendor 固化副本）"; continue }
+        if (-not (Test-Path (Join-Path $gsvTts "lib\index.js"))) { Write-Host "缺 gsv-tts 注入源 $gsvTts（vendor 固化副本）"; continue }
         # 统一补丁门禁（Phase 2a）：marketplace A-D + undo E1-E7 幂等施加与校验，
         # 登记表 scripts/patches/registry.json。默认 ensure 语义（缺席即施加，锚点失配拒打包）。
         # 雷点 8：全量输出——Select-First 截断管道会杀 node 致误判失败
@@ -121,11 +127,20 @@ foreach ($abi in @('arm64', 'x86_64')) {
         # 为一次 tar 流处理——压缩/解压从 ×4 → ×1（原三步各自全量重压缩 ~743MB）。
         # 雷点 8：全量输出。
         Write-Host "== 单 pass 注入（@dsh-android + undo/market + 权威 patch）（$abi）=="
-        python (Join-Path $Root "scripts\inject-all.py") $snap (Join-Path $work "snap-final2.tar.xz") (Join-Path $Root "scripts\profile-web.cordis.patch.yml") --dsh-android @pluginDirs --external $undo $market $modelSync 2>&1
+        # 语音本地 ASR：按 ABI 裁剪 whisper 二进制（一份快照只带对应架构，省 ~23MB）
+        $localAsr = Join-Path $work "dsh-local-asr"
+        New-Item -ItemType Directory -Force -Path (Join-Path $localAsr "lib\bin") | Out-Null
+        Copy-Item (Join-Path $Root "vendor\dsh-local-asr\package.json") $localAsr -Force
+        Copy-Item (Join-Path $Root "vendor\dsh-local-asr\cordis.patch.yml") $localAsr -Force
+        Copy-Item (Join-Path $Root "vendor\dsh-local-asr\lib\*.js") (Join-Path $localAsr "lib") -Force
+        $asrBin = if ($abi -eq "x86_64") { "whisper-cli-x86_64" } else { "whisper-cli-arm64" }
+        Copy-Item (Join-Path $Root "vendor\dsh-local-asr\lib\bin\$asrBin") (Join-Path $localAsr "lib\bin\$asrBin") -Force
+
+        python (Join-Path $Root "scripts\inject-all.py") $snap (Join-Path $work "snap-final2.tar.xz") (Join-Path $Root "scripts\profile-web.cordis.patch.yml") --dsh-android @pluginDirs --external $undo $market $modelSync $voice $gsvTts $localAsr 2>&1
         if ($LASTEXITCODE -ne 0) { Write-Host "注入失败，拒绝打包（$abi）"; continue }
         # 防回归（审校 C4 2026-08-23）：patch 挂载集 ⊇ 注入集——缺条目（如 linux-env 漏挂）直接拒打包
         Write-Host "== 挂载集校验（$abi）=="
-        node (Join-Path $Root "scripts\check-patch-mounts.mjs") (Join-Path $Root "scripts\profile-web.cordis.patch.yml") @pluginDirs $undo $market $modelSync 2>&1 | Select-Object -First 4
+        node (Join-Path $Root "scripts\check-patch-mounts.mjs") (Join-Path $Root "scripts\profile-web.cordis.patch.yml") @pluginDirs $undo $market $modelSync $voice $gsvTts $localAsr 2>&1 | Select-Object -First 4
         if ($LASTEXITCODE -ne 0) { Write-Host "patch 挂载集校验失败，拒绝打包（$abi）"; continue }
         $snapIn = Join-Path $work "snap-final2.tar.xz"
     } else {

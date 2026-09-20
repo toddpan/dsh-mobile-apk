@@ -1,0 +1,12 @@
+# dsh-local-asr：本地 ASR（whisper.cpp + OpenAI 兼容服务，127.0.0.1:8941）
+# 同时把 dsh-voice 的 ASR 指到本地——asrApiKey 必须非空（插件校验），local 即占位。
+- insert:
+    - id: dsh-local-asr
+      name: dsh-local-asr
+- patch:
+    - id: voice
+      config:
+        asrEngine: custom
+        asrBaseUrl: http://127.0.0.1:8941/v1
+        asrApiKey: local
+        asrModel: base-q5_1

@@ -1,0 +1,14 @@
+{
+  "name": "dsh-local-asr",
+  "version": "0.1.0",
+  "description": "DSH 本地 ASR：whisper.cpp（Android NDK 交叉编译）+ OpenAI 兼容 /v1/audio/transcriptions 服务。离线语音转文字，无需外部 API。",
+  "keywords": ["dsh-plugin", "asr", "whisper", "speech-to-text", "offline"],
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": { "default": "./lib/index.js" },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  }
+}

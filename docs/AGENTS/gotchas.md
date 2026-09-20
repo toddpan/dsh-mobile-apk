@@ -165,3 +165,18 @@
     引擎对 profiles 目录做 `watch`，读不到该文件 → `syscall: 'watch', code: 'EACCES'` 直接崩，
     表现为「引擎启动失败」而日志里没有任何插件错误。铁律：调试期在 profiles 目录里造文件
     必须 `chown u0_a53:u0_a53` 或立刻删除（应用 uid 见 `dumpsys package`）。
+72. **netstat -ano / LISTENING 是 Windows 专用（dsh-prompt-enhancer 本地 ASR worker 探活，2026-09-20）**：
+    插件 asr-models.cjs 用 `netstat -ano` + 输出含 `LISTENING` 判 worker 存活/找 pid，
+    Termux 上两者都不成立 → isWorkerUp 恒 false → ensureWorker 每次 boot 重复 spawn（进程堆积）。
+    修法：worker 启动时自报 `worker.pid`（{pid,port}），host 读它 + `/proc/<pid>/cmdline`
+    核验后杀（防 pid 复用误杀）。vendor 补丁见 `vendor/dsh-prompt-enhancer/lib/asr-models.cjs`。
+73. **external 插件 vendor 副本必须过依赖闭包校验（voice/gsv-tts 缺传递依赖 → 引擎启动即死）**：
+    cordis loader 对 `Cannot find package` 按致命处理（`plugin tree failed to load` → boot 抛错退出），
+    表现是引擎 90s 超时反复重试、进程 CPU 空转、3080 半开不响应，engine.log 却只有别的插件的成功行。
+    前批 dsh-voice（缺 proxy-agent-negotiate 等）/dsh-gsv-tts（缺 xml-escape 等）即此病。
+    铁律：vendor 固化后跑一遍依赖闭包核对（逐包读 dependencies，createRequire 逐项 resolve），
+    缺的 `npm install --omit=dev` 补齐并清掉 node_modules/.bin（悬空符号链接会让 inject-all 崩）。
+74. **`.dsh/*.lock` 0 字节陈旧锁：`*.lock` 通配删不到点文件，且 atomic-write 会等满超时再崩**：
+    引擎崩溃循环会留下 `.credentials.yaml.lock`（0 字节、无属主信息），下次 boot
+    `atomic-write: timed out waiting for the writer lock` 直接抛错。清理必须
+    `rm -f .dsh/.*.lock .dsh/*.lock`（注意点文件！）。属一次性升级清理：依赖树修复后不再产生。

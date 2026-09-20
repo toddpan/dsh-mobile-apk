@@ -1,0 +1,28 @@
+{
+  "voice": {
+    "asr": {
+      "engine": "local",
+      "local": {
+        "model": "sense-voice",
+        "language": "auto"
+      },
+      "cloud": {
+        "protocol": "chat",
+        "baseUrl": "",
+        "apiKey": "",
+        "model": "qwen3-asr-flash"
+      }
+    },
+    "refine": {
+      "enabled": false,
+      "mode": "chain"
+    },
+    "vad": {
+      "enabled": true
+    },
+    "hotkey": {
+      "enabled": false,
+      "combo": ""
+    }
+  }
+}

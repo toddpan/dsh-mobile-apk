@@ -18,3 +18,6 @@ plugins/*/cbin_*
 
 # Python 编译缓存
 __pycache__/
+# dsh-prompt-enhancer 本地 ASR 模型（239MB 超 GitHub 单文件上限；scripts/fetch-pe-asr-model.sh 拉取）
+vendor/dsh-prompt-enhancer-asr-runtime/home/.dsh/dsh-prompt-enhancer-asr/models/*/model.int8.onnx
+.DS_Store

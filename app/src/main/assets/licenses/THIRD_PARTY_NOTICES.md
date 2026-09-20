@@ -102,4 +102,14 @@
 | 组件 | 版本 | 许可证 | 上游源码 |
 |---|---|---|---|
 | @napi-rs/canvas | 1.0.8 | MIT | [Brooooooklyn/canvas](https://github.com/Brooooooklyn/canvas) |
-| @napi-rs/canvas-android-arm64 | 1.0.8 | MIT | [Brooooooklyn/canvas](https://github.com/Brooooooklyn/canvas)（napi android-arm64 预编译 binding） |
+| @deepseek-ai/schemastery | 3.18.x | MIT | 随 dsh-gsv-tts 自带 node_modules 分发 |
+| edge-tts-universal | 1.4.x | **AGPL-3.0** | [原来so/edge-tts-universal](https://github.com/Nanqiangste/edge-tts-universal)（随 dsh-gsv-tts 自带 node_modules 分发；AGPL 全文见包内 LICENSE，源码要约同 §源码要约） |
+| https-proxy-agent | 9.1.0 | MIT | 随 dsh-voice 自带 node_modules 分发 |
+| undici | 8.10.x | MIT | 随 dsh-voice 自带 node_modules 分发 |
+| ws | 8.21.x | MIT | 随 dsh-voice 自带 node_modules 分发 |
+| dsh-voice | 0.3.3 | MIT | 语音双件套（voice_tts/voice_stt/voice_list） |
+| dsh-gsv-tts | 4.1.0 | MIT | TTS 面板 + 朗读（移动端锁定 Edge 云端模式） |
+| dsh-prompt-enhancer | 3.4.0 | **上游未声明许可证**（仓库无 LICENSE 文件，[Fishsb/dsh-prompt-enhancer](https://github.com/Fishsb/dsh-prompt-enhancer)） | 提示词增强（✨）+ 语音识别（🎤 双引擎）；移动端预装 = vendor 固化副本 + Termux 适配（worker shim + sherpa-onnx CLI，本仓 vendor/dsh-prompt-enhancer） |
+| undici（dsh-prompt-enhancer 自带） | 7.29.1 | MIT | 随 dsh-prompt-enhancer 自带 node_modules 分发 |
+| sherpa-onnx | 1.13.8 | Apache-2.0 | [k2-fsa/sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)（官方 Termux 构建 android-aarch64/x86_64-termux-shared：bin/sherpa-onnx-offline + lib/*.so，随快照 `home/.dsh/dsh-prompt-enhancer-asr/` 分发；源码要约同上仓库） |
+| SenseVoice int8 模型 | 2024-07-17 | Apache-2.0 | [sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17](https://huggingface.co/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17)（model.int8.onnx + tokens.txt，随快照 `home/.dsh/dsh-prompt-enhancer-asr/models/sense-voice/` 分发） |

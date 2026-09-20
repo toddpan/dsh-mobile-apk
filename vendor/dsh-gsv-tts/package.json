@@ -1,0 +1,83 @@
+{
+  "name": "dsh-gsv-tts",
+  "version": "4.1.0",
+  "description": "DSH plugin for local GSV-TTS-Lite voice cloning + Edge cloud simple mode: voice presets, auto-read, engine setup assistant, read-aloud button, settings panel",
+  "keywords": [
+    "dsh-plugin",
+    "tts",
+    "voice",
+    "voice-cloning",
+    "text-to-speech",
+    "speech-synthesis",
+    "deepseek-harness"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TaoruiLiu19/dsh-gsv.git"
+  },
+  "homepage": "https://github.com/TaoruiLiu19/dsh-gsv#readme",
+  "bugs": {
+    "url": "https://github.com/TaoruiLiu19/dsh-gsv/issues"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/client.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "scripts",
+    "cordis.patch.yml",
+    "docs/voices",
+    "docs/voices.json",
+    "docs/images",
+    "docs/PUBLISHING.md",
+    "README.md",
+    "README_EN.md",
+    "CHANGELOG.md",
+    "CHANGELOG_EN.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-slots",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-modules"
+      ],
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-tools": "^0.1.0-rc.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "^3.18.1",
+    "edge-tts-universal": "^1.4.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test \"tests/*.test.mjs\"",
+    "verify": "node scripts/verify-manifest.mjs",
+    "clean": "node -e \"require('fs').rmSync('lib',{recursive:true,force:true})\""
+  }
+}

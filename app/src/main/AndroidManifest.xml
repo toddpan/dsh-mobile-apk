@@ -9,6 +9,9 @@
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <!-- 麦克风：WebView 内语音输入（getUserMedia audio）；运行时申请 + WebChromeClient.onPermissionRequest 放行 -->
+  <uses-permission android:name="android.permission.RECORD_AUDIO" />
+  <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
   <!-- 0.13.0 F2/M3.4：开机自启（恢复用户同意的状态）与前台唤醒锁（标准档位）；电池优化白名单引导。 -->
